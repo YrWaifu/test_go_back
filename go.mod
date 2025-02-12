@@ -1,6 +1,6 @@
 module github.com/YrWaifu/test_go_back
 
-go 1.23.5
+go 1.23.3
 
 require (
 	github.com/Masterminds/squirrel v1.5.4

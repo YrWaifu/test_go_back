@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres_db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=12345
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  migrate:
+    image: migrate
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+    environment:
+      SQL_CONNECTION_STRING: postgres://postgres:12345@postgres:5432/db?sslmode=disable
+    command: /usr/local/bin/migrate
+
+volumes:
+  pg_data:
