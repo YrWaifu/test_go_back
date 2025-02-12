@@ -1,0 +1,4 @@
+SQL_CONNECTION_STRING=postgres://postgres:12345@localhost:5432/db?sslmode=disable
+SECRET_KEY=CSkdNKipxfcmIp4A3OHaPw==
+ACCESS_TOKEN_DELAY=10m
+LISTEN_ADDR=:8080

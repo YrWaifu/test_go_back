@@ -5,20 +5,20 @@ import (
 	"fmt"
 	"time"
 
-	userDomain "github.com/YrWaifu/test_go_back/internal/domain/user"
 	authDomain "github.com/YrWaifu/test_go_back/internal/domain/auth"
+	userDomain "github.com/YrWaifu/test_go_back/internal/domain/user"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type Service struct {
-	d Dependency
+	d   Dependency
 	jwt *jwtService
 }
 
 func New(d Dependency, secretKey string, expDelay time.Duration) *Service {
 	return &Service{
-		d: d,
-		jwt: &jwtService{expDelay: expDelay, secretKey: []byte(secretKey)}
+		d:   d,
+		jwt: &jwtService{expDelay: expDelay, secretKey: []byte(secretKey)},
 	}
 }
 
