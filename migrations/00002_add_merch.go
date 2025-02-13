@@ -8,21 +8,20 @@ import (
 )
 
 func init() {
-	goose.AddMigrationContext(upInit, downInit)
+	goose.AddMigrationContext(upAddMerch, downAddMerch)
 }
 
-func upInit(ctx context.Context, tx *sql.Tx) error {
+func upAddMerch(ctx context.Context, tx *sql.Tx) error {
 	_, err := tx.Exec(`
-	CREATE TABLE users (
+	CREATE TABLE merch (
 		id SERIAL PRIMARY KEY,
-		username text NOT NULL,
-		password_hash TEXT NOT NULL,
-		balance INT NOT NULL,
+		name text NOT NULL,
+		price INT NOT NULL,
 		created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 		updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 	);
 
-	CREATE UNIQUE INDEX users_username_idx ON users(username);
+	CREATE UNIQUE INDEX merch_name_idx ON merch(name);
 	`)
 	if err != nil {
 		return err
@@ -31,7 +30,7 @@ func upInit(ctx context.Context, tx *sql.Tx) error {
 	return nil
 }
 
-func downInit(ctx context.Context, tx *sql.Tx) error {
+func downAddMerch(ctx context.Context, tx *sql.Tx) error {
 	// This code is executed when the migration is rolled back.
 	return nil
 }

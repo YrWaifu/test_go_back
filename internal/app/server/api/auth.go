@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 
 	userDomain "github.com/YrWaifu/test_go_back/internal/domain/user"
@@ -47,7 +48,9 @@ func (a *AuthAPI) SignIn(w http.ResponseWriter, r *http.Request) {
 			JSONError(w, ErrorResponse{Errors: "invalid credentials"}, http.StatusUnauthorized)
 			return
 		}
+		log.Println(err.Error())
 		JSONError(w, ErrorResponse{Errors: "internal server error"}, http.StatusInternalServerError)
+		return
 	}
 
 	json.NewEncoder(w).Encode(SignInResponse{Token: resp.AccessToken})

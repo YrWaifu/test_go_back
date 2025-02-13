@@ -47,4 +47,6 @@ func (s *Server) Run(ctx context.Context) error {
 	r.Post("/api/auth", authAPI.SignIn)
 
 	http.ListenAndServe(s.config.Addr, r)
+
+	return nil
 }

@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/YrWaifu/test_go_back/internal/domain/user/storage"
+	"github.com/YrWaifu/test_go_back/pkg/transaction"
 
 	sq "github.com/Masterminds/squirrel"
 	userDomain "github.com/YrWaifu/test_go_back/internal/domain/user"
@@ -21,8 +23,8 @@ func New(db *pgxpool.Pool) *Storage {
 	}
 }
 
-func (s *Storage) GetByUsername(ctx context.Context, username string) (userDomain.User, error) {
-	return s.get(ctx, "", username)
+func (s *Storage) GetByUsername(ctx context.Context, username string, opts storage.GetOptions) (userDomain.User, error) {
+	return s.get(ctx, "", username, opts)
 }
 
 func (s *Storage) Create(ctx context.Context, user userDomain.User) (string, error) {
@@ -39,7 +41,7 @@ func (s *Storage) Create(ctx context.Context, user userDomain.User) (string, err
 	}
 
 	var id string
-	err = s.db.QueryRow(ctx, sqlQuery, args).Scan(&id)
+	err = s.db.QueryRow(ctx, sqlQuery, args...).Scan(&id)
 	if err != nil {
 		return "", fmt.Errorf("raw scan: %w", err)
 	}
@@ -47,11 +49,11 @@ func (s *Storage) Create(ctx context.Context, user userDomain.User) (string, err
 	return id, nil
 }
 
-func (s *Storage) GetById(ctx context.Context, id string) (userDomain.User, error) {
-	return s.get(ctx, id, "")
+func (s *Storage) GetById(ctx context.Context, id string, opts storage.GetOptions) (userDomain.User, error) {
+	return s.get(ctx, id, "", opts)
 }
 
-func (s *Storage) get(ctx context.Context, id, username string) (userDomain.User, error) {
+func (s *Storage) get(ctx context.Context, id, username string, opts storage.GetOptions) (userDomain.User, error) {
 	query := sq.StatementBuilder.
 		PlaceholderFormat(sq.Dollar).
 		Select("id", "username", "password_hash", "balance").
@@ -63,13 +65,22 @@ func (s *Storage) get(ctx context.Context, id, username string) (userDomain.User
 		query = query.Where(sq.Eq{"username": username})
 	}
 
+	if opts.ForUpdate {
+		query = query.Suffix("FOR UPDATE")
+	}
+
 	sqlQuery, args, err := query.ToSql()
 	if err != nil {
 		return userDomain.User{}, fmt.Errorf("building query: %w", err)
 	}
 
 	var user userDomain.User
-	err = s.db.QueryRow(ctx, sqlQuery, args).Scan(&user.ID, &user.Username, &user.PasswordHash, &user.Balance)
+	if tx, txErr := transaction.ExtractTx(ctx); txErr != nil && tx != nil {
+		err = tx.QueryRow(ctx, sqlQuery, args...).Scan(&user.ID, &user.Username, &user.PasswordHash, &user.Balance)
+	} else {
+		err = s.db.QueryRow(ctx, sqlQuery, args...).Scan(&user.ID, &user.Username, &user.PasswordHash, &user.Balance)
+	}
+
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return userDomain.User{}, userDomain.ErrUserNotFound
@@ -78,4 +89,28 @@ func (s *Storage) get(ctx context.Context, id, username string) (userDomain.User
 	}
 
 	return user, nil
+}
+
+func (s *Storage) IncrementBalance(ctx context.Context, username string, inc int) error {
+	query := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Update("users").
+		Set("balance", sq.Expr("balance + (?)", inc)).
+		Where(sq.Eq{"username": username})
+
+	sqlQuery, args, err := query.ToSql()
+	if err != nil {
+		return fmt.Errorf("building query: %w", err)
+	}
+
+	tx, err := transaction.ExtractTx(ctx)
+	if err != nil {
+		return fmt.Errorf("extracting tx: %w", err)
+	}
+
+	_, err = tx.Exec(ctx, sqlQuery, args...)
+	if err != nil {
+		return fmt.Errorf("incrementing balance: %w", err)
+	}
+
+	return nil
 }
