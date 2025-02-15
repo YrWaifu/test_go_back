@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	userStorage "github.com/YrWaifu/test_go_back/internal/domain/user/storage"
 	"time"
 
 	authDomain "github.com/YrWaifu/test_go_back/internal/domain/auth"
@@ -32,7 +33,7 @@ type SignInResponse struct {
 }
 
 func (s *Service) SignIn(ctx context.Context, req SignInRequest) (SignInResponse, error) {
-	user, err := s.d.UserStorage.GetByUsername(ctx, req.Username)
+	user, err := s.d.UserStorage.GetByUsername(ctx, req.Username, userStorage.GetOptions{})
 	if err != nil {
 		return SignInResponse{}, fmt.Errorf("user storage get by username: %w", err)
 	}
@@ -74,4 +75,13 @@ func (s *Service) SignUp(ctx context.Context, req SignUpRequest) (SignUpResponse
 	}
 
 	return SignUpResponse{}, nil
+}
+
+func (s *Service) Authenticate(ctx context.Context, token string) (string, error) {
+	id, err := s.jwt.verifyToken(ctx, token)
+	if err != nil {
+		return "", fmt.Errorf("verify token: %w", err)
+	}
+
+	return id, nil
 }

@@ -17,7 +17,7 @@ func New(db *pgxpool.Pool) *Storage {
 	return &Storage{db: db}
 }
 
-func (s *Storage) BeginPurchase(ctx context.Context, fn func(context.Context) error) error {
+func (s *Storage) BeginTransaction(ctx context.Context, fn func(context.Context) error) error {
 	tx, err := s.db.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return err
@@ -40,16 +40,15 @@ func (s *Storage) BeginPurchase(ctx context.Context, fn func(context.Context) er
 	return nil
 }
 
-func (s *Storage) CreatePurchase(ctx context.Context, userID string, merchID string) error {
+func (s *Storage) CreateTransaction(ctx context.Context, senderID string, receiverID string, amount int) error {
 	query := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
-		Insert("purchase").
-		Columns("user_id", "merch_id", "quantity").
-		Values(userID, merchID, 1).
-		Suffix("ON CONFLICT (user_id, merch_id) DO UPDATE SET quantity = purchase.quantity + 1")
+		Insert("transactions").
+		Columns("sender_id", "receiver_id", "amount").
+		Values(senderID, receiverID, amount)
 
 	sqlQuery, args, err := query.ToSql()
 	if err != nil {
-		return fmt.Errorf("create purchase statement: %w", err)
+		return fmt.Errorf("create transaction statement: %w", err)
 	}
 
 	tx, err := transaction.ExtractTx(ctx)
@@ -59,7 +58,7 @@ func (s *Storage) CreatePurchase(ctx context.Context, userID string, merchID str
 
 	_, err = tx.Exec(ctx, sqlQuery, args...)
 	if err != nil {
-		return fmt.Errorf("insert purchase: %w", err)
+		return fmt.Errorf("insert transaction: %w", err)
 	}
 
 	return nil

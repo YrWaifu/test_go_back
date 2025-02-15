@@ -35,6 +35,10 @@ func (s *Service) BuyMerch(ctx context.Context, req BuyRequest) (BuyResponse, er
 			return fmt.Errorf("get user by id: %w", err)
 		}
 
+		if user.Balance-merch.Price < 0 {
+			return fmt.Errorf("user %s out of money", req.UserID)
+		}
+
 		err = s.d.UserStorage.IncrementBalance(ctx, user.Username, merch.Price*-1)
 		if err != nil {
 			return fmt.Errorf("increment balance: %w", err)

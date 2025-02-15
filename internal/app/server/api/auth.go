@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	pkgErrors "github.com/YrWaifu/test_go_back/pkg/errors"
 	"log"
 	"net/http"
 
@@ -32,24 +33,24 @@ func (a *AuthAPI) SignIn(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		JSONError(w, ErrorResponse{Errors: "invalid request body"}, http.StatusBadRequest)
+		pkgErrors.JSONError(w, pkgErrors.ErrorResponse{Errors: "invalid request body"}, http.StatusBadRequest)
 		return
 	} else if req.Username == "" {
-		JSONError(w, ErrorResponse{Errors: "username is required"}, http.StatusBadRequest)
+		pkgErrors.JSONError(w, pkgErrors.ErrorResponse{Errors: "username is required"}, http.StatusBadRequest)
 		return
 	} else if req.Password == "" {
-		JSONError(w, ErrorResponse{Errors: "password is required"}, http.StatusBadRequest)
+		pkgErrors.JSONError(w, pkgErrors.ErrorResponse{Errors: "password is required"}, http.StatusBadRequest)
 		return
 	}
 
 	resp, err := a.d.AuthUsecase.SignIn(r.Context(), authUsecase.SignInRequest{Username: req.Username, Password: req.Password})
 	if err != nil {
 		if errors.Is(err, userDomain.ErrUserNotFound) {
-			JSONError(w, ErrorResponse{Errors: "invalid credentials"}, http.StatusUnauthorized)
+			pkgErrors.JSONError(w, pkgErrors.ErrorResponse{Errors: "invalid credentials"}, http.StatusUnauthorized)
 			return
 		}
 		log.Println(err.Error())
-		JSONError(w, ErrorResponse{Errors: "internal server error"}, http.StatusInternalServerError)
+		pkgErrors.JSONError(w, pkgErrors.ErrorResponse{Errors: "internal server error"}, http.StatusInternalServerError)
 		return
 	}
 

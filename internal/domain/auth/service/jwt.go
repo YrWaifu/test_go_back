@@ -43,5 +43,5 @@ func (s *jwtService) verifyToken(ctx context.Context, tokenString string) (strin
 		return "", authDomain.ErrInvalidToken
 	}
 
-	return claims.ID, nil
+	return claims.Subject, nil
 }

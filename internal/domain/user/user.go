@@ -8,7 +8,7 @@ type User struct {
 	ID           string
 	Username     string
 	PasswordHash string
-	Balance      uint
+	Balance      int
 }
 
 var ErrUserNotFound = errors.New("user not found")

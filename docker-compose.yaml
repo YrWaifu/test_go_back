@@ -39,7 +39,7 @@ services:
     environment:
       SQL_CONNECTION_STRING: postgres://postgres:12345@postgres:5432/db?sslmode=disable
       SECRET_KEY: CSkdNKipxfcmIp4A3OHaPw==
-      ACCESS_TOKEN_DELAY: 10m
+      ACCESS_TOKEN_DELAY: 1h
       LISTEN_ADDR: :8080
     command: /usr/local/bin/server
     ports:
