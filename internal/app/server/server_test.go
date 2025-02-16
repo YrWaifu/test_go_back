@@ -46,6 +46,7 @@ func shutdown() {
 }
 
 func TestMain(m *testing.M) {
+
 	setup()
 	m.Run()
 }
