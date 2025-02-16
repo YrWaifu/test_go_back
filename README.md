@@ -56,3 +56,12 @@ go tool cover -func .coverage.out
 Тестирование проводилось на `/api/info`
 * Среднее время ответа при RPS 1090 равно 10.10мс
 * SLI успешности ответа - 100%
+* 50th percentile - 7ms
+* 80th percentile - 15ms
+* 90th percentile - 22ms
+* 99th percentile - 44ms
+
+Устройство, на котором проходило тестирование имеет следующие характеристики:
+* CPU - Ryzen 7 2700x
+* RAM - 16GB
+* Windows11/WSL
