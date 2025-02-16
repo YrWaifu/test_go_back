@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	purchaseDomain "github.com/YrWaifu/test_go_back/internal/domain/purchase"
 	userStorage "github.com/YrWaifu/test_go_back/internal/domain/user/storage"
 )
 
@@ -56,4 +57,21 @@ func (s *Service) BuyMerch(ctx context.Context, req BuyRequest) (BuyResponse, er
 	}
 
 	return BuyResponse{}, nil
+}
+
+type ListByUserIDRequest struct {
+	UserID string
+}
+
+type ListByUserIDResponse struct {
+	Purchases []purchaseDomain.Purchase
+}
+
+func (s *Service) ListByUserID(ctx context.Context, r ListByUserIDRequest) (ListByUserIDResponse, error) {
+	purchases, err := s.d.PurchaseStorage.ListByUserID(ctx, r.UserID)
+	if err != nil {
+		return ListByUserIDResponse{}, err
+	}
+
+	return ListByUserIDResponse{Purchases: purchases}, nil
 }

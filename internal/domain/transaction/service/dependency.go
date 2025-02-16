@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	transactionDomain "github.com/YrWaifu/test_go_back/internal/domain/transaction"
 	userDomain "github.com/YrWaifu/test_go_back/internal/domain/user"
 	"github.com/YrWaifu/test_go_back/internal/domain/user/storage"
 )
@@ -9,6 +10,7 @@ import (
 type TransactionStorage interface {
 	CreateTransaction(ctx context.Context, senderID string, receiverID string, amount int) error
 	BeginTransaction(ctx context.Context, fn func(context.Context) error) error
+	ListByUserID(ctx context.Context, userID string) ([]transactionDomain.Transaction, []transactionDomain.Transaction, error)
 }
 
 type UserStorage interface {

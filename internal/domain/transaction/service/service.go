@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	transactionDomain "github.com/YrWaifu/test_go_back/internal/domain/transaction"
 	"github.com/YrWaifu/test_go_back/internal/domain/user/storage"
 )
 
@@ -61,4 +62,25 @@ func (s *Service) TransferCoins(ctx context.Context, req TransferRequest) (Trans
 	}
 
 	return TransferResponse{}, nil
+}
+
+type ListByUserIDRequest struct {
+	UserID string
+}
+
+type ListByUserIDResponse struct {
+	Sent     []transactionDomain.Transaction
+	Received []transactionDomain.Transaction
+}
+
+func (s *Service) ListByUserID(ctx context.Context, r ListByUserIDRequest) (ListByUserIDResponse, error) {
+	sent, received, err := s.d.TransactionStorage.ListByUserID(ctx, r.UserID)
+	if err != nil {
+		return ListByUserIDResponse{}, fmt.Errorf("list transactions by user id: %w", err)
+	}
+
+	return ListByUserIDResponse{
+		Sent:     sent,
+		Received: received,
+	}, nil
 }

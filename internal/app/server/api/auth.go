@@ -54,5 +54,9 @@ func (a *AuthAPI) SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(SignInResponse{Token: resp.AccessToken})
+	err = json.NewEncoder(w).Encode(SignInResponse{Token: resp.AccessToken})
+	if err != nil {
+		pkgErrors.JSONError(w, pkgErrors.ErrorResponse{Errors: "json encode"}, http.StatusInternalServerError)
+		return
+	}
 }

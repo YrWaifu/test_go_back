@@ -4,6 +4,7 @@ import (
 	"context"
 
 	authUsecase "github.com/YrWaifu/test_go_back/internal/usecase/auth"
+	infoUsecase "github.com/YrWaifu/test_go_back/internal/usecase/info"
 	purchaseUsecase "github.com/YrWaifu/test_go_back/internal/usecase/purchase"
 	transfactionUsecase "github.com/YrWaifu/test_go_back/internal/usecase/transaction"
 )
@@ -30,4 +31,12 @@ type TransactionUsecase interface {
 
 type TransactionDependency struct {
 	TransactionUsecase TransactionUsecase
+}
+
+type InfoUsecase interface {
+	Info(ctx context.Context, req infoUsecase.InfoRequest) (infoUsecase.InfoResponse, error)
+}
+
+type InfoDependency struct {
+	InfoUsecase InfoUsecase
 }

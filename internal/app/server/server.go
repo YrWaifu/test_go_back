@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/YrWaifu/test_go_back/internal/domain/auth/utils"
+	userservice "github.com/YrWaifu/test_go_back/internal/domain/user/service"
+	infousecase "github.com/YrWaifu/test_go_back/internal/usecase/info"
 	"net/http"
 	"time"
 
@@ -58,14 +60,21 @@ func (s *Server) Run(ctx context.Context) error {
 		TransactionStorage: transactionStorage,
 		UserStorage:        userStorage,
 	})
+	userService := userservice.New(userservice.Dependency{UserStorage: userStorage})
 
 	authUsecase := authusecase.New(authusecase.Dependency{AuthService: authService})
 	purchaseUsecase := purchaseusecase.New(purchaseusecase.Dependency{PurchaseService: purchaseService})
 	transactionUsecase := transactionusecase.New(transactionusecase.Dependency{TransactionService: transactionService})
+	infoUsecase := infousecase.New(infousecase.Dependency{
+		PurchaseService:    purchaseService,
+		TransactionService: transactionService,
+		UserService:        userService,
+	})
 
 	authAPI := api.NewAuthAPI(api.AuthDependency{AuthUsecase: authUsecase})
 	purchaseAPI := api.NewPurchaseAPI(api.PurchaseDependency{PurchaseUsecase: purchaseUsecase})
 	transactionAPI := api.NewTransactionAPI(api.TransactionDependency{TransactionUsecase: transactionUsecase})
+	infoAPI := api.NewInfoApi(api.InfoDependency{InfoUsecase: infoUsecase})
 
 	r := chi.NewRouter()
 	r.Use(utils.AuthMiddleware(authService.Authenticate))
@@ -74,6 +83,7 @@ func (s *Server) Run(ctx context.Context) error {
 		r.Use(utils.AuthRequiredMiddleware())
 		r.Get("/api/buy/{merchName}", purchaseAPI.PurchaseMerch)
 		r.Post("/api/sendCoin", transactionAPI.SendCoin)
+		r.Get("/api/info", infoAPI.Info)
 	})
 
 	http.ListenAndServe(s.config.Addr, r)

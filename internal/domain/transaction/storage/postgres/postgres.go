@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	sq "github.com/Masterminds/squirrel"
+	transactionDomain "github.com/YrWaifu/test_go_back/internal/domain/transaction"
 	"github.com/YrWaifu/test_go_back/pkg/transaction"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -62,4 +63,43 @@ func (s *Storage) CreateTransaction(ctx context.Context, senderID string, receiv
 	}
 
 	return nil
+}
+
+func (s *Storage) ListByUserID(ctx context.Context, userID string) ([]transactionDomain.Transaction, []transactionDomain.Transaction, error) {
+	query := sq.StatementBuilder.PlaceholderFormat(sq.Dollar).
+		Select("t.sender_id", "t.receiver_id", "t.amount", "s.username as sender_name", "r.username as receiver_name").
+		From("transactions t").
+		Where(sq.Or{
+			sq.Eq{"sender_id": userID},
+			sq.Eq{"receiver_id": userID},
+		}).
+		LeftJoin("users r ON t.receiver_id = r.id").
+		LeftJoin("users s ON t.sender_id = s.id")
+
+	sqlQuery, args, err := query.ToSql()
+	if err != nil {
+		return nil, nil, fmt.Errorf("list transactions: %w", err)
+	}
+
+	rows, err := s.db.Query(ctx, sqlQuery, args...)
+	if err != nil {
+		return nil, nil, fmt.Errorf("list transactions: %w", err)
+	}
+
+	var received, sent []transactionDomain.Transaction
+	for rows.Next() {
+		var t transactionDomain.Transaction
+
+		if err := rows.Scan(&t.SenderId, &t.ReceiverId, &t.Amount, &t.SenderName, &t.ReceiverName); err != nil {
+			return nil, nil, fmt.Errorf("list transactions: %w", err)
+		}
+
+		if t.SenderId == userID {
+			sent = append(sent, t)
+		} else {
+			received = append(received, t)
+		}
+	}
+
+	return sent, received, nil
 }
