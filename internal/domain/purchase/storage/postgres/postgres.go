@@ -8,6 +8,7 @@ import (
 	"github.com/YrWaifu/test_go_back/pkg/transaction"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"log/slog"
 )
 
 type Storage struct {
@@ -24,7 +25,11 @@ func (s *Storage) BeginPurchase(ctx context.Context, fn func(context.Context) er
 		return err
 	}
 
-	defer tx.Rollback(ctx)
+	defer func() {
+		if err := tx.Rollback(ctx); err != nil {
+			slog.Info("rollback error")
+		}
+	}()
 
 	ctx = transaction.InjectTx(ctx, tx)
 
@@ -87,7 +92,7 @@ func (s *Storage) ListByUserID(ctx context.Context, userID string) ([]purchaseDo
 
 	for rows.Next() {
 		var p purchaseDomain.Purchase
-		
+
 		if err := rows.Scan(&p.UserID, &p.MerchID, &p.Quantity, &p.MerchName); err != nil {
 			return nil, fmt.Errorf("scan row: %w", err)
 		}

@@ -34,6 +34,9 @@ func setup() {
 		GRANT ALL ON SCHEMA public TO postgres;
 		GRANT ALL ON SCHEMA public TO public;
 	`)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	err = migrations.Up(db)
 	if err != nil {

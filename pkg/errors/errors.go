@@ -2,6 +2,7 @@ package errors
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 )
 
@@ -13,5 +14,8 @@ func JSONError(w http.ResponseWriter, err any, code int) {
 	w.Header().Set("Content-type", "application/json; charset=utf-8")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(code)
-	json.NewEncoder(w).Encode(err)
+	encodeErr := json.NewEncoder(w).Encode(err)
+	if encodeErr != nil {
+		slog.Info("encode")
+	}
 }
