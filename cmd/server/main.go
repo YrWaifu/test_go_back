@@ -16,7 +16,15 @@ func main() {
 		SecretKey:        os.Getenv("SECRET_KEY"),
 		AccessTokenDelay: mustParseDuration(os.Getenv("ACCESS_TOKEN_DELAY")),
 	})
-	s.Run(context.Background())
+	err := s.Init(context.Background())
+	if err != nil {
+		panic(err)
+	}
+
+	err = s.ListenAndServe()
+	if err != nil {
+		panic(err)
+	}
 }
 
 func mustParseDuration(s string) time.Duration {

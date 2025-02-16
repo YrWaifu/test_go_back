@@ -33,13 +33,14 @@ type Config struct {
 
 type Server struct {
 	config Config
+	router chi.Router
 }
 
 func New(c Config) *Server {
 	return &Server{config: c}
 }
 
-func (s *Server) Run(ctx context.Context) error {
+func (s *Server) Init(ctx context.Context) error {
 	db, err := pgxpool.New(ctx, s.config.SQLConnection)
 	if err != nil {
 		return fmt.Errorf("database conn: %w", err)
@@ -86,7 +87,11 @@ func (s *Server) Run(ctx context.Context) error {
 		r.Get("/api/info", infoAPI.Info)
 	})
 
-	http.ListenAndServe(s.config.Addr, r)
+	s.router = r
 
 	return nil
+}
+
+func (s *Server) ListenAndServe() error {
+	return http.ListenAndServe(s.config.Addr, s.router)
 }

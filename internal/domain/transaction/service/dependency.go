@@ -1,5 +1,7 @@
 package service
 
+//go:generate mockgen -source dependency.go -destination mock/dependency.go
+
 import (
 	"context"
 	transactionDomain "github.com/YrWaifu/test_go_back/internal/domain/transaction"

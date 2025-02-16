@@ -1,11 +1,15 @@
 package api
 
+//go:generate mockgen -source dependency.go -destination mock/dependency.go
+
 import (
 	"context"
-
 	authUsecase "github.com/YrWaifu/test_go_back/internal/usecase/auth"
 	infoUsecase "github.com/YrWaifu/test_go_back/internal/usecase/info"
 	purchaseUsecase "github.com/YrWaifu/test_go_back/internal/usecase/purchase"
+)
+
+import (
 	transfactionUsecase "github.com/YrWaifu/test_go_back/internal/usecase/transaction"
 )
 

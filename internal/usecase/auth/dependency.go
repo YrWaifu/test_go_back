@@ -1,5 +1,7 @@
 package auth
 
+//go:generate mockgen -source dependency.go -destination mock/dependency.go
+
 import (
 	"context"
 
