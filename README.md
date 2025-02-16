@@ -47,5 +47,7 @@
 * Запуск тестов 
 ```bash
 TEST_SQL_CONNECTION_STRING="postgres://postgres:12345@127.0.0.1:5432/test?sslmode=disable" go test ./...
+go tool cover -html .coverage.out 
+go tool cover -func .coverage.out 
 ```
 #### Нагрузочное тестирование
