@@ -9,7 +9,6 @@ import (
 
 type AuthFunc func(ctx context.Context, token string) (string, error)
 
-// ZALUPA
 func AuthMiddleware(authFunc AuthFunc) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
